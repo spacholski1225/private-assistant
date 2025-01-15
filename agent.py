@@ -1,6 +1,9 @@
 from smolagents import CodeAgent, DuckDuckGoSearchTool, LiteLLMModel
 
-model = LiteLLMModel(model_id="gpt-4o-mini")
-agent = CodeAgent(tools=[DuckDuckGoSearchTool()], model=model)
+class Agent:
+    def ask_agent(question: str):
+        model = LiteLLMModel(model_id="gpt-4o-mini")
+        codeAgent = CodeAgent(tools=[DuckDuckGoSearchTool()], model=model)
+        answer = codeAgent.run(question)
 
-agent.run("Zjadłem 3 gryzy drożdzówki. Ile to będzie mialo kalorii?")
+        return answer

@@ -5,6 +5,7 @@ import os
 import tempfile
 import subprocess
 import time
+import agent
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
@@ -37,9 +38,14 @@ def transcribe_audio():
             audio_data = recognizer.record(source)
             text = recognizer.recognize_google(audio_data, language='pl-PL')
             print(text)
+
+            answer = agent.Agent.ask_agent(text)
+
+            print(answer)
+
             return jsonify({
                 'success': True,
-                'text': text
+                'text': answer
             })
             
     except sr.UnknownValueError:
