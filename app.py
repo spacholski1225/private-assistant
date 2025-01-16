@@ -17,7 +17,7 @@ def index():
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
     if 'audio' not in request.files:
-        return jsonify({'error': 'Brak pliku audio'}), 400
+        return jsonify({'error': 'No audio file'}), 400
     
     audio_file = request.files['audio']
     webm_path = None
@@ -49,27 +49,27 @@ def transcribe_audio():
             })
             
     except sr.UnknownValueError:
-        return jsonify({'error': 'Nie można rozpoznać mowy'}), 400
+        return jsonify({'error': 'Cannot recognize audio'}), 400
     except sr.RequestError as e:
-        return jsonify({'error': f'Błąd serwisu: {str(e)}'}), 500
+        return jsonify({'error': f'Service error: {str(e)}'}), 500
     except subprocess.CalledProcessError as e:
-        return jsonify({'error': f'Błąd konwersji audio: {str(e)}'}), 500
+        return jsonify({'error': f'Cannot convert audio: {str(e)}'}), 500
     except Exception as e:
-        return jsonify({'error': f'Nieoczekiwany błąd: {str(e)}'}), 500
+        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
     finally:
         try:
             if webm_path and os.path.exists(webm_path):
                 os.close(os.open(webm_path, os.O_RDONLY))
                 os.unlink(webm_path)
         except Exception as e:
-            print(f"Błąd podczas usuwania pliku webm: {e}")
+            print(f"Cannot delete file webm: {e}")
             
         try:
             if wav_path and os.path.exists(wav_path):
                 os.close(os.open(wav_path, os.O_RDONLY))
                 os.unlink(wav_path)
         except Exception as e:
-            print(f"Błąd podczas usuwania pliku wav: {e}")
+            print(f"Cannot delete file wav: {e}")
 
 if __name__ == '__main__':
     app.run(debug=True)
