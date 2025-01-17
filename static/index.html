@@ -39,7 +39,6 @@
             const status = document.getElementById('recordingStatus');
             
             if (!isRecording) {
-                // Rozpocznij nagrywanie
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                         mediaRecorder = new MediaRecorder(stream, {
@@ -67,7 +66,6 @@
                     alert('Nie udało się uzyskać dostępu do mikrofonu. Upewnij się, że masz podłączony mikrofon i udzieliłeś odpowiednich uprawnień.');
                 }
             } else {
-                // Zatrzymaj nagrywanie
                 mediaRecorder.stop();
                 isRecording = false;
                 button.textContent = 'Rozpocznij nagrywanie';
