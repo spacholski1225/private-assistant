@@ -6,6 +6,7 @@ import tempfile
 import subprocess
 import time
 import agent
+import tts_agent as tts
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
@@ -41,7 +42,7 @@ def transcribe_audio():
 
             answer = agent.Agent.ask_agent(text)
 
-            print(answer)
+            tts.text_to_speech_file(text)
 
             return jsonify({
                 'success': True,
