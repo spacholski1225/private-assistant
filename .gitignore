@@ -6,3 +6,6 @@ instance/
 .webassets-cache
 
 .env
+
+#List with to do tasks
+tasks
