@@ -76,27 +76,48 @@
         });
 
         async function sendAudioToServer(audioBlob) {
-            const formData = new FormData();
-            formData.append('audio', audioBlob);
+    const formData = new FormData();
+    formData.append('audio', audioBlob);
 
-            try {
-                const response = await fetch('http://localhost:5000/transcribe', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('result').classList.remove('hidden');
-                    document.getElementById('transcription').textContent = data.text;
-                } else {
-                    throw new Error(data.error || 'Wystąpił błąd podczas przetwarzania audio');
-                }
-            } catch (error) {
-                console.error('Błąd podczas wysyłania audio:', error);
-                alert('Wystąpił błąd podczas przetwarzania nagrania. Spróbuj ponownie.');
+    try {
+        const response = await fetch('http://localhost:5000/transcribe', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('result').classList.remove('hidden');
+            document.getElementById('transcription').textContent = data.text;
+            
+            // Konwertujemy base64 na Blob
+            const audioBytes = atob(data.audio_data);
+            const arrayBuffer = new ArrayBuffer(audioBytes.length);
+            const byteArray = new Uint8Array(arrayBuffer);
+            
+            for (let i = 0; i < audioBytes.length; i++) {
+                byteArray[i] = audioBytes.charCodeAt(i);
             }
+            
+            const audioBlob = new Blob([arrayBuffer], { type: 'audio/mp3' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            // Odtwarzanie dźwięku
+            const audio = new Audio(audioUrl);
+            audio.play();
+            
+            // Czyszczenie URL po zakończeniu odtwarzania
+            audio.onended = () => {
+                URL.revokeObjectURL(audioUrl);
+            };
+        } else {
+            throw new Error(data.error || 'Wystąpił błąd podczas przetwarzania audio');
         }
+    } catch (error) {
+        console.error('Błąd podczas wysyłania audio:', error);
+        alert('Wystąpił błąd podczas przetwarzania nagrania. Spróbuj ponownie.');
+    }
+}
     </script>
 </body>
 </html>

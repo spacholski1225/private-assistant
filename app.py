@@ -23,6 +23,7 @@ def transcribe_audio():
     audio_file = request.files['audio']
     webm_path = None
     wav_path = None
+    audio_response_path = None
     
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix='.webm') as temp_webm:
@@ -38,39 +39,38 @@ def transcribe_audio():
         with sr.AudioFile(wav_path) as source:
             audio_data = recognizer.record(source)
             text = recognizer.recognize_google(audio_data, language='pl-PL')
-            print(text)
+            print(f"Rozpoznany tekst: {text}")
 
             answer = agent.Agent.ask_agent(text)
-
-            tts.text_to_speech_file(text)
-
+            print(f"Odpowiedź agenta: {answer}")
+            
+            # Generujemy plik audio
+            audio_response_path = tts.text_to_speech_file(answer)
+            
+            # Zwracamy plik audio jako base64
+            with open(audio_response_path, 'rb') as audio_file:
+                audio_data = audio_file.read()
+                import base64
+                audio_base64 = base64.b64encode(audio_data).decode('utf-8')
+                
             return jsonify({
                 'success': True,
-                'text': answer
+                'text': answer,
+                'audio_data': audio_base64
             })
             
-    except sr.UnknownValueError:
-        return jsonify({'error': 'Cannot recognize audio'}), 400
-    except sr.RequestError as e:
-        return jsonify({'error': f'Service error: {str(e)}'}), 500
-    except subprocess.CalledProcessError as e:
-        return jsonify({'error': f'Cannot convert audio: {str(e)}'}), 500
     except Exception as e:
+        print(f"Wystąpił błąd: {str(e)}")
         return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
     finally:
-        try:
-            if webm_path and os.path.exists(webm_path):
-                os.close(os.open(webm_path, os.O_RDONLY))
-                os.unlink(webm_path)
-        except Exception as e:
-            print(f"Cannot delete file webm: {e}")
-            
-        try:
-            if wav_path and os.path.exists(wav_path):
-                os.close(os.open(wav_path, os.O_RDONLY))
-                os.unlink(wav_path)
-        except Exception as e:
-            print(f"Cannot delete file wav: {e}")
+        # Czyszczenie plików tymczasowych
+        for path in [webm_path, wav_path, audio_response_path]:
+            if path and os.path.exists(path):
+                try:
+                    os.close(os.open(path, os.O_RDONLY))
+                    os.unlink(path)
+                except Exception as e:
+                    print(f"Cannot delete file {path}: {e}")
 
 if __name__ == '__main__':
     app.run(debug=True)
