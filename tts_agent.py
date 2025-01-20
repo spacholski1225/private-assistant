@@ -1,26 +1,23 @@
-from flask import send_file
 import os
 from elevenlabs import VoiceSettings
 from elevenlabs.client import ElevenLabs
 import tempfile
 ELEVENLABS_API_KEY = os.getenv("EVENLABS_KEY")
 
-# Sprawdź czy klucz API istnieje
 if not ELEVENLABS_API_KEY:
-    raise ValueError("EVENLABS_KEY nie jest ustawiony w zmiennych środowiskowych!")
+    raise ValueError("EVENLABS_KEY is not set!")
 
-# Inicjalizacja klienta z explicit sprawdzeniem klucza
 client = ElevenLabs(
     api_key=ELEVENLABS_API_KEY,
 )
 
 def text_to_speech_file(text: str) -> str:
     if not ELEVENLABS_API_KEY:
-        raise ValueError("Brak klucza API ElevenLabs")
+        raise ValueError("Missing evenlabs key!")
         
     try:
         response = client.text_to_speech.convert(
-            voice_id="pNInz6obpgDQGcFmaJgB",
+            voice_id="pNInz6obpgDQGcFmaJgB", #default voice
             output_format="mp3_22050_32",
             text=text,
             model_id="eleven_turbo_v2_5",
@@ -39,5 +36,5 @@ def text_to_speech_file(text: str) -> str:
             return temp_file.name
             
     except Exception as e:
-        print(f"Błąd ElevenLabs API: {str(e)}")
+        print(f"Error Evenlabs API: {str(e)}")
         raise
