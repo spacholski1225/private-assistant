@@ -6,7 +6,7 @@ import tempfile
 import subprocess
 import time
 import agent
-import tts_agent as tts
+import tools.tts_tool as tts
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
