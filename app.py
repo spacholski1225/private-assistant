@@ -44,10 +44,8 @@ def transcribe_audio():
             answer = agent.Agent.ask_agent(text)
             print(f"Odpowiedź agenta: {answer}")
             
-            # Generujemy plik audio
             audio_response_path = tts.text_to_speech_file(answer)
             
-            # Zwracamy plik audio jako base64
             with open(audio_response_path, 'rb') as audio_file:
                 audio_data = audio_file.read()
                 import base64
@@ -63,7 +61,6 @@ def transcribe_audio():
         print(f"Wystąpił błąd: {str(e)}")
         return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
     finally:
-        # Czyszczenie plików tymczasowych
         for path in [webm_path, wav_path, audio_response_path]:
             if path and os.path.exists(path):
                 try:
