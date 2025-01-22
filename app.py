@@ -39,10 +39,10 @@ def transcribe_audio():
         with sr.AudioFile(wav_path) as source:
             audio_data = recognizer.record(source)
             text = recognizer.recognize_google(audio_data, language='pl-PL')
-            print(f"Rozpoznany tekst: {text}")
+            print(f"Recognize text: {text}")
 
             answer = agent.Agent.ask_agent(text)
-            print(f"Odpowiedź agenta: {answer}")
+            print(f"Agent answer: {answer}")
             
             audio_response_path = tts.text_to_speech_file(answer)
             
@@ -58,7 +58,7 @@ def transcribe_audio():
             })
             
     except Exception as e:
-        print(f"Wystąpił błąd: {str(e)}")
+        print(f"Error occurs: {str(e)}")
         return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
     finally:
         for path in [webm_path, wav_path, audio_response_path]:
