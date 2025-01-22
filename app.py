@@ -1,19 +1,73 @@
-from flask import Flask, request, jsonify, send_from_directory
+import base64
+from urllib.parse import urlencode
+from dotenv import load_dotenv
+from flask import Flask, redirect, request, jsonify, send_from_directory
 from flask_cors import CORS
+import requests
+import spotipy
+import spotipy.util as util
 import speech_recognition as sr
 import os
 import tempfile
 import subprocess
 import time
 import agent
+from tools.spotify import SpotifyClient
 import tools.tts_tool as tts
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
+load_dotenv()
 
 @app.route('/')
 def index():
     return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/login')
+def login():
+    scope = 'user-read-private user-read-email'
+    auth_url = f"https://accounts.spotify.com/authorize?client_id={os.getenv("SPOTIFY_CLIENT_ID")}&response_type=code&redirect_uri={os.getenv("SPOTIFY_REDIRECT_URI")}&scope={scope}"
+    return redirect(auth_url)
+
+@app.route("/callback")
+def callback():
+    """
+    Endpoint obsługujący przekierowanie z Spotify. Wymienia kod na token dostępowy.
+    """
+    code = request.args.get("code")
+
+    if code is None:
+        return "Brak kodu autoryzacyjnego w żądaniu.", 400
+
+    auth_options = {
+        'url': 'https://accounts.spotify.com/api/token',
+        'data': {
+            'code': code,
+            'redirect_uri': os.getenv("SPOTIFY_REDIRECT_URI"),
+            'grant_type': 'authorization_code'
+        },
+        'headers': {
+            'content-type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Basic ' + base64.b64encode(f"{os.getenv("SPOTIFY_CLIENT_ID")}:{os.getenv("SPOTIFY_CLIENT_SECRET")}".encode()).decode()
+        }
+    }
+
+    response = requests.post(auth_options['url'], data=auth_options['data'], headers=auth_options['headers'])
+    token_info = response.json()
+
+    if response.status_code != 200:
+        return f"Błąd podczas wymiany kodu na token: {token_info.get('error_description', 'Nieznany błąd')}", 400
+
+    access_token = token_info["access_token"]
+    
+    # Zainicjalizowanie klienta Spotify z tokenem
+    global spotify
+    spotify = spotipy.Spotify(auth=access_token)
+    print('Autoryzacja zakończona sukcesem! Możesz teraz używać API.')
+
+    return "Autoryzacja zakończona sukcesem! Możesz teraz używać API.", 200
+
+
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
