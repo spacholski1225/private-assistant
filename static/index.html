@@ -1,81 +1,155 @@
 <!DOCTYPE html>
 <html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nagrywanie Głosu</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/recorder-js/1.0.7/recorder.js"></script>
-</head>
-<body class="bg-gray-100 p-4">
-    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h1 class="text-2xl font-bold mb-4 text-center">Nagrywanie Głosu</h1>
-        
-        <div class="space-y-4">
-            <div class="flex justify-center">
-                <button id="recordButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                    Rozpocznij nagrywanie
-                </button>
-            </div>
-            
-            <div id="recordingStatus" class="text-center hidden">
-                <span class="text-red-500">Nagrywanie...</span>
-                <div class="w-4 h-4 bg-red-500 rounded-full animate-pulse mx-auto mt-2"></div>
-            </div>
-            
-            <div id="result" class="mt-4 p-4 bg-gray-50 rounded hidden">
-                <h2 class="font-semibold mb-2">Rozpoznany tekst:</h2>
-                <p id="transcription" class="text-gray-700"></p>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+        <title>Nagrywanie Głosu</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: #001f3f; /* Granatowe tło */
+                font-family: Arial, sans-serif;
+                color: #fff;
+            }
+    
+            #recordButton {
+                background: linear-gradient(90deg, #ff007f, #ff4da6); /* Neonowy róż */
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 100px;
+                height: 100px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 36px;
+                cursor: pointer;
+                box-shadow: 0 0 15px #ff007f, 0 0 30px #ff4da6;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+    
+            #recordButton:hover {
+                transform: scale(1.1);
+                box-shadow: 0 0 20px #ff007f, 0 0 40px #ff4da6;
+            }
+            #recordButton i {
+                font-size: 36px; /* Rozmiar ikony */
+                color: white; /* Kolor ikony */
+                transition: transform 0.2s, color 0.2s;
+            }
+
+            #recordButton i.fa-microphone-slash {
+                color: #ff4da6; /* Kolor dla przekreślonego mikrofonu */
+            }
+
+            #recordButton:hover i {
+                transform: scale(1.2); /* Efekt powiększenia przy najechaniu */
+            }
+
+            #recordingStatus {
+                margin-top: 20px;
+                text-align: center;
+                font-size: 18px;
+                display: none;
+            }
+    
+            .status-active {
+                display: block;
+            }
+    
+            .pulse {
+                width: 15px;
+                height: 15px;
+                background-color: #ff4da6;
+                border-radius: 50%;
+                animation: pulse 1s infinite;
+                margin: 10px auto 0;
+            }
+    
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(1.5);
+                    opacity: 0;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <button id="recordButton">
+                <i class="fa fa-microphone"></i>
+            </button>
+            <div id="recordingStatus" class="status">
+                <span>Nagrywanie...</span>
+                <div class="pulse"></div>
             </div>
         </div>
-    </div>
-
+    
     <script>
-        let mediaRecorder;
-        let audioChunks = [];
-        let isRecording = false;
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
 
-        document.getElementById('recordButton').addEventListener('click', async () => {
-            const button = document.getElementById('recordButton');
-            const status = document.getElementById('recordingStatus');
-            
-            if (!isRecording) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                        mediaRecorder = new MediaRecorder(stream, {
-                        mimeType: 'audio/webm'
-                    });
-                    audioChunks = [];
+    document.getElementById('recordButton').addEventListener('click', async () => {
+        const button = document.getElementById('recordButton');
+        const icon = button.querySelector('i');
+        const status = document.getElementById('recordingStatus');
 
-                    mediaRecorder.ondataavailable = (event) => {
-                        audioChunks.push(event.data);
-                    };
+        if (!isRecording) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: 'audio/webm'
+                });
+                audioChunks = [];
 
-                    mediaRecorder.onstop = async () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                        await sendAudioToServer(audioBlob);
-                    };
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
 
-                    mediaRecorder.start();
-                    isRecording = true;
-                    button.textContent = 'Zatrzymaj nagrywanie';
-                    button.classList.replace('bg-blue-500', 'bg-red-500');
-                    button.classList.replace('hover:bg-blue-600', 'hover:bg-red-600');
-                    status.classList.remove('hidden');
-                } catch (err) {
-                    console.error('Błąd podczas uzyskiwania dostępu do mikrofonu:', err);
-                    alert('Nie udało się uzyskać dostępu do mikrofonu. Upewnij się, że masz podłączony mikrofon i udzieliłeś odpowiednich uprawnień.');
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    await sendAudioToServer(audioBlob);
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+
+                if (icon) {
+                    icon.classList.replace('fa-microphone', 'fa-microphone-slash');
                 }
-            } else {
-                mediaRecorder.stop();
-                isRecording = false;
-                button.textContent = 'Rozpocznij nagrywanie';
-                button.classList.replace('bg-red-500', 'bg-blue-500');
-                button.classList.replace('hover:bg-red-600', 'hover:bg-blue-600');
-                status.classList.add('hidden');
+                if (status) {
+                    status.classList.add('status-active');
+                }
+            } catch (err) {
+                console.error('Błąd podczas uzyskiwania dostępu do mikrofonu:', err);
+                alert('Nie udało się uzyskać dostępu do mikrofonu. Upewnij się, że masz podłączony mikrofon i udzieliłeś odpowiednich uprawnień.');
             }
-        });
+        } else {
+            mediaRecorder.stop();
+            isRecording = false;
 
-        async function sendAudioToServer(audioBlob) {
+            if (icon) {
+                icon.classList.replace('fa-microphone-slash', 'fa-microphone');
+            }
+            if (status) {
+                status.classList.remove('status-active');
+            }
+        }
+    });
+
+
+async function sendAudioToServer(audioBlob) {
     const formData = new FormData();
     formData.append('audio', audioBlob);
 
@@ -90,7 +164,6 @@
             document.getElementById('result').classList.remove('hidden');
             document.getElementById('transcription').textContent = data.text;
             
-            // Konwertujemy base64 na Blob
             const audioBytes = atob(data.audio_data);
             const arrayBuffer = new ArrayBuffer(audioBytes.length);
             const byteArray = new Uint8Array(arrayBuffer);
@@ -102,11 +175,9 @@
             const audioBlob = new Blob([arrayBuffer], { type: 'audio/mp3' });
             const audioUrl = URL.createObjectURL(audioBlob);
             
-            // Odtwarzanie dźwięku
             const audio = new Audio(audioUrl);
             audio.play();
             
-            // Czyszczenie URL po zakończeniu odtwarzania
             audio.onended = () => {
                 URL.revokeObjectURL(audioUrl);
             };
