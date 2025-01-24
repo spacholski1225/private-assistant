@@ -162,7 +162,8 @@ async function sendAudioToServer(audioBlob) {
     formData.append('audio', audioBlob);
 
     try {
-        const response = await fetch('http://localhost:5000/transcribe', {
+        const apiBase = window.location.origin;
+        const response = await fetch(`${apiBase}/transcribe`, {
             method: 'POST',
             body: formData
         });
