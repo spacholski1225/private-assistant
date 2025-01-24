@@ -71,7 +71,11 @@
                 animation: pulse 1s infinite;
                 margin: 10px auto 0;
             }
-    
+
+            .hidden {
+            display: none;
+            }
+
             @keyframes pulse {
                 0% {
                     transform: scale(1);
@@ -94,7 +98,11 @@
                 <div class="pulse"></div>
             </div>
         </div>
-    
+        <div id="result" class="hidden">
+            <h2>Odpowiedź:</h2>
+            <p id="transcription"></p>
+        </div>
+        
     <script>
     let mediaRecorder;
     let audioChunks = [];
@@ -161,27 +169,31 @@ async function sendAudioToServer(audioBlob) {
         
         const data = await response.json();
         if (data.success) {
-            document.getElementById('result').classList.remove('hidden');
-            document.getElementById('transcription').textContent = data.text;
-            
+            const resultDiv = document.getElementById('result');
+            const transcriptionParagraph = document.getElementById('transcription');
+
+            resultDiv.classList.remove('hidden');
+            transcriptionParagraph.textContent = data.text;
+
             const audioBytes = atob(data.audio_data);
             const arrayBuffer = new ArrayBuffer(audioBytes.length);
             const byteArray = new Uint8Array(arrayBuffer);
-            
+
             for (let i = 0; i < audioBytes.length; i++) {
                 byteArray[i] = audioBytes.charCodeAt(i);
             }
-            
+
             const audioBlob = new Blob([arrayBuffer], { type: 'audio/mp3' });
             const audioUrl = URL.createObjectURL(audioBlob);
-            
+
             const audio = new Audio(audioUrl);
             audio.play();
-            
+
             audio.onended = () => {
                 URL.revokeObjectURL(audioUrl);
             };
-        } else {
+        }
+    else {
             throw new Error(data.error || 'Wystąpił błąd podczas przetwarzania audio');
         }
     } catch (error) {
