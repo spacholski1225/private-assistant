@@ -117,7 +117,7 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream, {
-                    mimeType: 'audio/webm'
+                    mimeType: 'audio/wav'
                 });
                 audioChunks = [];
 
@@ -140,9 +140,18 @@
                     status.classList.add('status-active');
                 }
             } catch (err) {
-                console.error('Błąd podczas uzyskiwania dostępu do mikrofonu:', err);
-                alert('Nie udało się uzyskać dostępu do mikrofonu. Upewnij się, że masz podłączony mikrofon i udzieliłeś odpowiednich uprawnień.');
+                console.error('Błąd podczas uzyskiwania dostępu do mikrofonu:', err.name, err.message);
+                if (err.name === 'NotAllowedError') {
+                    alert('Dostęp do mikrofonu został zablokowany. Upewnij się, że udzieliłeś uprawnień.');
+                } else if (err.name === 'NotFoundError') {
+                    alert('Nie znaleziono mikrofonu. Upewnij się, że jest podłączony.');
+                } else if (err.name === 'SecurityError') {
+                    alert('Przeglądarka zablokowała dostęp do mikrofonu. Sprawdź ustawienia bezpieczeństwa.');
+                } else {
+                    alert('Nie udało się uzyskać dostępu do mikrofonu. Spróbuj ponownie.');
+                }
             }
+
         } else {
             mediaRecorder.stop();
             isRecording = false;
