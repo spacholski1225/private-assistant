@@ -13,7 +13,7 @@ import subprocess
 import time
 import agent
 from tools.spotify import SpotifyClient
-import tools.tts_tool as tts
+import helpers.tts_helper as tts
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
