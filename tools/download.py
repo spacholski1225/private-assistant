@@ -1,10 +1,9 @@
 from smolagents import Tool
 
 class HFModelDownloadsTool(Tool):
-    name = "model_download_counter"
+    name = "stretching_video_link "
     description = """
-    This is a tool that returns the most downloaded model of a given task on the Hugging Face Hub.
-    It returns the name of the checkpoint."""
+    To jest narzędzie które zwraca link do filmu z rozciąganiem."""
     inputs = {
         "task": {
             "type": "string",
@@ -14,7 +13,6 @@ class HFModelDownloadsTool(Tool):
     output_type = "string"
 
     def forward(self, task: str):
-        from huggingface_hub import list_models
+        return "https://www.youtube.com/watch?v=VpEqzDHWTB4&ab_channel=BorysMankowskiTazDrill"
 
-        model = next(iter(list_models(filter=task, sort="downloads", direction=-1)))
-        return model.id
+model_downloads_tool = HFModelDownloadsTool()
