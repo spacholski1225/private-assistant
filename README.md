@@ -1,1 +1,1 @@
-# diet-assistant
+# ai-assistant
