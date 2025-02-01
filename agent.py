@@ -1,6 +1,6 @@
 from smolagents import CodeAgent, DuckDuckGoSearchTool, LiteLLMModel
 
-from tools.download import stretching_video_link
+from tools.utils import stretching_video_link
 
 class Agent:
     def ask_agent(question: str):
