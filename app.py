@@ -4,9 +4,6 @@ from urllib.parse import urlencode
 from dotenv import load_dotenv
 from flask import Flask, redirect, request, jsonify, send_from_directory
 from flask_cors import CORS
-import requests
-import spotipy
-import spotipy.util as util
 import speech_recognition as sr
 import os
 import tempfile
