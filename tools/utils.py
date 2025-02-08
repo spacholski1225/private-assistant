@@ -15,7 +15,7 @@ def stretching_video_link() -> str:
 
 @tool
 def get_todays_events():
-    """Pobiera wszystkie wydarzenia z Kalendarza Google na obecny dzień."""
+    """Pobiera wszystkie wydarzenia z Kalendarza Google na dzisiaj czyli obecny dzień tygodnia."""
     creds = None
     if os.path.exists("token.json"):
         creds = Credentials.from_authorized_user_file("token.json", SCOPES)
