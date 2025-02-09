@@ -31,8 +31,8 @@ def get_todays_events():
 
     service = build("calendar", "v3", credentials=creds)
 
-    now = datetime.utcnow().isoformat() + "Z"
-    end_of_day = (datetime.utcnow().replace(hour=23, minute=59, second=59)).isoformat() + "Z"
+    now = datetime.now(datetime.timezone.now).isoformat() + "Z"
+    end_of_day = (datetime.now(datetime.timezone.now).replace(hour=23, minute=59, second=59)).isoformat() + "Z"
 
     events_result = service.events().list(
         calendarId="primary", timeMin=now, timeMax=end_of_day,
